@@ -1,0 +1,35 @@
+
+networks:
+  back-tier:
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.1.0
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    restart: always
+    networks:
+      - back-tier
+
+  grafana:
+    image: grafana/grafana:5.1.0
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    ports:
+      - 3000:3000
+    depends_on:
+      - prometheus
+    networks:
+      - back-tier
